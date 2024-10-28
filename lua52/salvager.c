@@ -19,6 +19,7 @@ extern "C"{
 
 #include "swap.h"
 #include "json.h"
+#include "multipart.h"
 
 static int s_swap(lua_State *L) {
     //check and fetch the arguments
@@ -61,11 +62,68 @@ static int s_yaml(lua_State *L) {
     return 1;
 }
 
+static int s_multipart(lua_State *L) {
+    size_t l = 0;
+    size_t dl = 0;
+    int from = 0;
+    int to =0;
+
+    const char* target = luaL_checklstring( L, 1, &l);
+    const char* delim = luaL_checklstring( L, 2, &dl);
+
+    char key[MULTIPART_KEY_MAX];
+    char value[l];
+    key[0] = '\0';
+    value[0] = '\0';
+    bool suc = false;
+
+    suc = parse_multipart( target, delim, l, (char*)key,(char*)value, &from, &to);
+
+    //pushed string is copied and used on lua side
+    lua_pushstring(L, key);
+    lua_pushstring(L, value);
+    lua_pushboolean(L, suc);
+    lua_pushnumber(L, from);
+    lua_pushnumber(L, to);
+
+    return 5;
+}
+
+static int s_multipart_offset(lua_State *L) {
+    size_t l = 0;
+    size_t dl = 0;
+    int from = 0;
+    int to =0;
+
+    const char* target = luaL_checklstring( L, 1, &l);
+    int offset = luaL_checkinteger (L, 2);
+    const char* delim = luaL_checklstring( L, 3, &dl);
+
+    char key[MULTIPART_KEY_MAX];
+    char value[l];
+    key[0] = '\0';
+    value[0] = '\0';
+    bool suc = false;
+
+    suc = parse_multipart_offset( target, offset, delim, l, (char*)key,(char*)value, &from, &to);
+
+    //pushed string is copied and used on lua side
+    lua_pushstring(L, key);
+    lua_pushstring(L, value);
+    lua_pushboolean(L, suc);
+    lua_pushnumber(L, from);
+    lua_pushnumber(L, to);
+
+    return 5;
+}
+
 //library to be registered
 static const struct luaL_Reg mylib [] = {
       {"swap", s_swap},
       {"json", s_json},
       {"yaml", s_yaml},
+      {"multipart", s_multipart},
+      {"multipart_offset", s_multipart_offset},
       {NULL, NULL}  /* sentinel */
     };
 
