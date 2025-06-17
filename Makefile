@@ -12,7 +12,7 @@ BINDIR := bin
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 OBJECTS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
-.PHONY: all clean test lua lua52
+.PHONY: all clean test lua luajit lua52
 all: test lua
 
 test: $(OBJECTS)
@@ -20,9 +20,17 @@ test: $(OBJECTS)
 	$(CPP) $(CFLAGS) -I$(INCLUDEDIR) $^ test/test.c -o $(BINDIR)/$@ 
 	./$(BINDIR)/$@		
 
-lua: $(OBJECTS) 
+lua: $(OBJECTS)
 	@mkdir -p $(OBJDIR)
 	$(CPP) $(CFLAGS) $(LUAFLAGS) -I$(INCLUDEDIR) lua/salvager.c $(OBJECTS) -shared -o $(OBJDIR)/salvager.so
+
+luajit: $(OBJECTS)
+	@mkdir -p $(OBJDIR)
+	$(CPP) $(CFLAGS) $(LUAFLAGS) -I$(INCLUDEDIR) lua52/salvager.c $(OBJECTS) -shared -o $(OBJDIR)/salvager.so
+
+lua52: $(OBJECTS)
+	@mkdir -p $(OBJDIR)
+	$(CPP) $(CFLAGS) $(LUA52FLAGS) -I$(INCLUDEDIR) lua52/salvager.c $(OBJECTS) -shared -o $(OBJDIR)/salvager.so
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
